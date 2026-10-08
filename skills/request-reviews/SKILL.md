@@ -1,7 +1,7 @@
 ---
 name: request-reviews
 description: Get AI reviews on a GitHub PR from every reviewer I use — comments `@codex review` for Codex, requests Copilot as a reviewer, and, once those two have posted, runs Claude's `/code-review` with its inline comments prefixed `🤖 Claude:` (so they're clearly Claude's even though they post under my name) and told to skip issues Codex or Copilot already raised. Use when the user runs /request-reviews [pr], asks to get reviews on a PR, or wants the AI reviewers re-run after pushing fixes. Also called by delegate-task.
-allowed-tools: AskUserQuestion, Skill, Bash
+allowed-tools: AskUserQuestion, Skill, Bash, Agent
 ---
 
 # Request reviews
@@ -149,43 +149,58 @@ listing is empty, run 3c without the dedupe instruction.
 ### 3c — Run the review
 
 1. Record the time just before launching, for step 3: `date -u +%Y-%m-%dT%H:%M:%SZ`.
-2. Invoke the `code-review` skill (Skill tool, `skill: code-review`) with
-   `args: "high --comment <url>"`. Always pass the level explicitly — without one, the review
-   reuses whatever level the user last typed, so reviews would get inconsistent depth. The args
+2. Launch the review through the **Agent tool** (`subagent_type: "general-purpose"`, description
+   e.g. `Claude review of PR <number>`), not by invoking `code-review` directly. `code-review`
+   runs as a forked agent that doesn't see anything you write before invoking it, and its args
    can't carry extra instructions (everything after the level and flags is read as the review
-   target), so state these rules in your own words just before invoking it:
-   - "Start every comment you post on the PR with `🤖 Claude: `."
-   - "Read the PR's code from `<review dir>`, not the current working directory: open files by
-     their absolute paths under it and run git and other commands with `cd <review dir> &&` or
-     `git -C <review dir>`."
-   - "These unresolved comments are already on the PR (some may be the author's own notes rather
-     than issues): <the 3b listing>. Review the whole PR as normal,
-     but don't post a finding with the same root cause as one of these, even if it's on a
-     different line or worded differently. Only skip it when you're confident it's the same
-     issue — if unsure, post it. A finding about the same code but a different defect is not a
-     duplicate."
+   target). An agent's prompt is the one place the rules are guaranteed to reach. Fill in this
+   prompt:
 
-   The review runs as a forked background agent that inherits this context, so it should see all
-   three.
-3. The review runs in the background and its result arrives later as a task notification. Don't
-   wait for it. When the notification arrives, make
-   sure every comment it posted is prefixed. Fetch the user's comments on the PR created since the
+   ```text
+   Run the `code-review` skill (Skill tool, skill: code-review) with
+   args: "high --comment <url>". Always pass the level "high" explicitly.
+
+   Rules for the review, which take precedence over the skill's own defaults:
+   - Start every comment you post on the PR with "🤖 Claude: " (emoji, the word Claude, a
+     colon, a space).
+   - The PR's code is checked out at <review dir>. Read it from there, not from your current
+     working directory: open files by their absolute paths under it, run git and other
+     commands with `cd <review dir> &&` or `git -C <review dir>`, and pass the full PR URL to
+     every `gh` command (e.g. `gh pr diff <url>`) so it can't resolve to another repo.
+   - These unresolved comments are already on the PR (some may be the author's own notes
+     rather than issues):
+     <the 3b listing, one per line>
+     Review the whole PR as normal, but don't post a finding with the same root cause as one
+     of these, even if it's on a different line or worded differently. Only skip it when
+     you're confident it's the same issue; if unsure, post it. A finding about the same code
+     but a different defect is not a duplicate.
+
+   When done, reply with how many findings you posted, and list any you skipped as already
+   raised (file:line and which existing comment).
+   ```
+
+   Leave out the "already on the PR" rule when the 3b listing is empty. Always pass the level
+   explicitly, as above — without one, the review reuses whatever level the user last typed, so
+   reviews would get inconsistent depth.
+3. The agent runs in the background and its result arrives later as a task notification. Don't
+   wait for it. When the notification arrives, make sure every comment it posted is prefixed
+   anyway — the prompt asks for it, but this check is the guarantee. Fetch the user's comments on the PR created since the
    recorded time — inline review comments, review bodies, and top-level comments:
 
    ```bash
    ME="$(gh api user -q .login)"
-   gh api "repos/{owner}/{repo}/pulls/<number>/comments" --paginate \
+   gh api "repos/<owner>/<repo>/pulls/<number>/comments" --paginate \
      --jq ".[] | select(.user.login == \"$ME\" and .created_at >= \"<since>\") | {id, body}"
-   gh api "repos/{owner}/{repo}/pulls/<number>/reviews" --paginate \
+   gh api "repos/<owner>/<repo>/pulls/<number>/reviews" --paginate \
      --jq ".[] | select(.user.login == \"$ME\" and .submitted_at >= \"<since>\" and .body != \"\") | {id, body}"
-   gh api "repos/{owner}/{repo}/issues/<number>/comments" --paginate \
+   gh api "repos/<owner>/<repo>/issues/<number>/comments" --paginate \
      --jq ".[] | select(.user.login == \"$ME\" and .created_at >= \"<since>\") | {id, body}"
    ```
 
    For each one whose body doesn't already start with `🤖 Claude:`, prepend `🤖 Claude: ` and save
-   it back — `PATCH repos/{owner}/{repo}/pulls/comments/<id>` for inline comments,
-   `PUT repos/{owner}/{repo}/pulls/<number>/reviews/<id>` for review bodies,
-   `PATCH repos/{owner}/{repo}/issues/comments/<id>` for top-level comments, each with
+   it back — `PATCH repos/<owner>/<repo>/pulls/comments/<id>` for inline comments,
+   `PUT repos/<owner>/<repo>/pulls/<number>/reviews/<id>` for review bodies,
+   `PATCH repos/<owner>/<repo>/issues/comments/<id>` for top-level comments, each with
    `-f body=<new body>`. Leave any `@codex review` trigger comment alone — editing it can stop
    Codex picking it up. Then tell the user in one line how many findings Claude posted and that
    they're prefixed.
