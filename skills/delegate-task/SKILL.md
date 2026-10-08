@@ -180,8 +180,10 @@ argument. It asks Codex and Copilot to review and runs Claude's `/code-review` w
 comments. Do this **before** leaving the worktree, so Claude's review can read the branch's code,
 not just the diff.
 
-Claude's review finishes in the background after you've handed back; follow `request-reviews`'
-instructions for prefixing its comments when the notification arrives.
+Claude's review starts once Codex and Copilot have posted (up to 15 minutes later) and finishes in
+the background after you've handed back; follow `request-reviews`' instructions for running it and
+prefixing its comments when the notifications arrive. Keep the worktree until then — `ExitWorktree`
+with `keep` in Step 7 does.
 
 ## Step 7 — Hand back
 
