@@ -63,10 +63,17 @@ git branch -m <type>/<name>
 Pick `<type>` from the nature of the task — `feature/` for new functionality, `bugfix/` for fixes,
 `chore/` for maintenance, tooling and config, `refactor/` for restructuring without behaviour
 change, `docs/` for documentation only. `<name>` is a short kebab-case slug of the task, without the
-`worktree-` prefix (e.g. `bugfix/date-picker-timezone`, `feature/csv-export`). If the repo's existing
-branches (`git branch -r`) follow a different convention, such as a ticket prefix, match that
-instead. If the name is already taken locally or on the remote, add a distinguishing suffix rather
-than reusing it.
+`worktree-` prefix (e.g. `bugfix/date-picker-timezone`, `feature/csv-export`).
+
+If the task comes from a Jira ticket (a pasted Jira link or a ticket key like `DEV-101`), put the
+ticket key straight after the type: `<type>/<TICKET>-<name>`, e.g. `feature/DEV-101-csv-export`,
+`bugfix/DEV-101-date-picker-timezone`, `chore/DEV-102-upgrade-eslint`. Read the ticket (Atlassian
+tools) and use its issue type to help pick `<type>` — a Bug is `bugfix/`, a Story or new
+functionality is `feature/`, a Task is whichever fits the actual work. Keep the key uppercase as
+Jira writes it, so the branch links back to the ticket.
+
+If the name is already taken locally or on the remote, add a distinguishing suffix rather than
+reusing it.
 
 The worktree's base ref is governed by the `worktree.baseRef` setting, which usually branches from
 the repo's **default** branch. If the chosen base is anything else, re-point the branch before
@@ -109,7 +116,7 @@ A few things specific to being delegated:
 
 ## Step 4 — Commit and push
 
-Invoke the `commit` skill (Skill tool, `skill: commit`) — it handles message style, ticket prefixes,
+Invoke the `commit` skill (Skill tool, `skill: commit`) — it handles the conventional-commit title (ticket scope included),
 and splitting logical changes. Then push:
 
 ```bash
@@ -148,7 +155,8 @@ gh pr create --draft \
   --assignee @me
 ```
 
-Use the same title convention as the commit (ticket prefix etc.). Capture the PR URL it prints.
+Use the same conventional-commit title format as the `commit` skill, e.g.
+`feat(DEV-636): rewrite welcome email`. Capture the PR URL it prints.
 
 Then, each as its own command so one failure doesn't block the rest:
 
