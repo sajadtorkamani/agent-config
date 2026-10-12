@@ -1,6 +1,6 @@
 ---
 name: delegate-task
-description: Take a task end to end in an isolated git worktree and hand back a draft PR — does the work, commits, pushes, opens a draft PR into the branch you choose, assigns it to you, requests you as reviewer, labels it `claude` and `needs-review`, gets AI reviews on it via `request-reviews` (Codex, Copilot, Claude), and writes the PR description. Use whenever the user runs /delegate-task, or asks you to do a piece of work "in a worktree" and open a PR for it, or says to go off and build something and come back with a PR to review.
+description: Take a task end to end in an isolated git worktree and hand back a draft PR — does the work, commits, pushes, opens a draft PR into the branch you choose, assigns it to you, requests you as reviewer, gets AI reviews on it via `request-reviews` (Codex, Copilot, Claude), and writes the PR description. Use whenever the user runs /delegate-task, or asks you to do a piece of work "in a worktree" and open a PR for it, or says to go off and build something and come back with a PR to review.
 allowed-tools: AskUserQuestion, Skill, EnterWorktree, ExitWorktree, TodoWrite, Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -11,7 +11,7 @@ the work in a throwaway worktree so their main checkout is never touched.
 
 The whole point is that the user hands off a task and gets back something reviewable. Two things
 follow from that: their working tree must come out exactly as it went in, and the PR must arrive
-fully dressed — draft, assigned, reviewer requested, labelled, described, AI reviewers on it —
+fully dressed — draft, assigned, reviewer requested, described, AI reviewers on it —
 so there's nothing left for them to click.
 
 ## Step 0 — Know the task
@@ -144,8 +144,8 @@ couldn't do, whether you were able to run the tests.
 
 ## Step 6 — Open the PR
 
-Create it as a draft, then dress it up in separate steps. Doing it all in one `gh pr create` means a
-missing label or a rejected reviewer takes the whole PR down with it:
+Create it as a draft, then request the reviewer in a separate step. Doing it all in one
+`gh pr create` means a rejected reviewer takes the whole PR down with it:
 
 ```bash
 gh pr create --draft \
@@ -158,19 +158,8 @@ gh pr create --draft \
 Use the same conventional-commit title format as the `commit` skill, e.g.
 `feat(DEV-636): rewrite welcome email`. Capture the PR URL it prints.
 
-Then, each as its own command so one failure doesn't block the rest:
+Then:
 
-- **Labels** — `gh pr edit <url> --add-label claude --add-label needs-review`. GitHub rejects the
-  whole call if either label is missing from the repo, so on failure create the missing ones and
-  retry once:
-
-  ```bash
-  gh label create claude --color D93F0B --description "Opened by Claude"
-  gh label create needs-review --color FBCA04 --description "Waiting on review"
-  ```
-
-  A label that already exists makes `gh label create` fail — that's fine, ignore it and retry the
-  `gh pr edit`.
 - **Reviewer** — `--add-reviewer` takes a literal login and does not understand `@me`, so resolve
   it first: `gh pr edit <url> --add-reviewer "$(gh api user -q .login)"`. GitHub refuses to request
   a review from the PR's own author, so when the user's own token opened the PR this returns
@@ -178,7 +167,7 @@ Then, each as its own command so one failure doesn't block the rest:
   one line in the report and move on. The PR is already assigned to them, which is what actually
   puts it on their dashboard.
 
-Verify the end state with `gh pr view <url> --json isDraft,assignees,reviewRequests,labels` so the
+Verify the end state with `gh pr view <url> --json isDraft,assignees,reviewRequests` so the
 report reflects what GitHub actually has, not what you asked for.
 
 ## Step 6b — Request AI reviews
@@ -202,7 +191,7 @@ Then report, briefly:
 
 - The PR URL and title, and that it's a draft.
 - Base branch and commit count.
-- Which of assignee / reviewer / label actually stuck, and anything that didn't, plus the
+- Which of assignee / reviewer actually stuck, and anything that didn't, plus the
   one-line-per-reviewer status from `request-reviews`.
 - What you verified (tests run, types checked) and what you couldn't.
 - Any assumptions or unfinished parts — repeat them here even though they're in the PR body; this is
@@ -223,8 +212,8 @@ Keep it short. The PR description carries the detail.
   only reason to read from it is copying gitignored config into the worktree.
 - Never force-push, and never mark the PR ready for review — it stays a draft until the user says
   otherwise.
-- Don't merge, don't request review from any human but the user, and don't add labels beyond
-  `claude` and `needs-review` unless asked. The AI reviews from `request-reviews` (Codex, Copilot,
+- Don't merge, don't request review from any human but the user, and don't add any labels
+  unless asked. The AI reviews from `request-reviews` (Codex, Copilot,
   Claude) are the exception — they go on every delegated PR.
 - No Claude attribution or co-author trailers in commits or the PR body. The `🤖 Claude: ` prefix
   on review comments is deliberate and is the only attribution.
