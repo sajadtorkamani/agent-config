@@ -184,16 +184,21 @@ listing is empty, run 3c without the dedupe instruction.
      but a different defect is not a duplicate.
 
    When done, reply with how many findings you posted, and list any you skipped as already
-   raised (file:line and which existing comment).
+   raised (file:line and which existing comment). Don't edit comments after they're posted,
+   even to add a missing prefix: your caller does that.
    ```
 
    Leave out the "already on the PR" rule when the 3b listing is empty. Always pass the level
    explicitly, as above — without one, the review reuses whatever level the user last typed, so
    reviews would get inconsistent depth.
 3. The agent runs in the background and its result arrives later as a task notification. Don't
-   wait for it. When the notification arrives, make sure every comment it posted is prefixed
-   anyway — the prompt asks for it, but this check is the guarantee. Fetch the user's comments on the PR created since the
-   recorded time — inline review comments, review bodies, and top-level comments:
+   wait for it. When the notification arrives, **fix the prefix before anything else**, before
+   you report or discuss any findings, and before you go back to whatever else you were doing
+   (e.g. `delegate-task`'s follow-up). Always run this check, whatever the agent's report says.
+   `code-review` posts its comments itself, in a forked context that never sees the prefix rule,
+   so they usually arrive unprefixed. This step is the only thing that adds the prefix. Fetch
+   the user's comments on the PR created since the recorded time — inline review comments,
+   review bodies, and top-level comments:
 
    ```bash
    ME="$(gh api user -q .login)"
@@ -209,8 +214,10 @@ listing is empty, run 3c without the dedupe instruction.
    `PUT repos/<owner>/<repo>/pulls/<number>/reviews/<id>` for review bodies,
    `PATCH repos/<owner>/<repo>/issues/comments/<id>` for top-level comments, each with
    `-f body=<new body>`. Leave any `@codex review` trigger comment alone — editing it can stop
-   Codex picking it up. Then tell the user in one line how many findings Claude posted and that
-   they're prefixed.
+   Codex picking it up. Re-fetch afterwards to confirm every body now starts with the prefix.
+   If an edit is denied or fails, tell the user which comments are still unprefixed (with
+   links) rather than moving on silently. Then tell the user in one line how many findings
+   Claude posted and that they're prefixed.
 
    If the review completed but posted **no findings**, say so on the PR the way Codex does, with a
    top-level comment (`gh pr comment <url> --body-file -`), using the commit recorded in step 1
