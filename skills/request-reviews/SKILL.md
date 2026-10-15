@@ -1,6 +1,6 @@
 ---
 name: request-reviews
-description: Get AI reviews on a GitHub PR from every reviewer I use — comments `@codex review` for Codex, requests Copilot as a reviewer, and, once those two have posted, runs Claude's `/code-review` with its inline comments prefixed `🤖 Claude:` (so they're clearly Claude's even though they post under my name) and told to skip issues Codex or Copilot already raised. Use when the user runs /request-reviews [pr], asks to get reviews on a PR, or wants the AI reviewers re-run after pushing fixes. Also called by delegate-task.
+description: Get AI reviews on a GitHub PR from every reviewer I use — comments `@codex review` for Codex, requests Copilot as a reviewer, and, once those two have posted, runs Claude's `/code-review` with its comments prefixed `🤖 Claude (<model>):` (so they're clearly Claude's even though they post under my name), posts a "no major issues" comment when it finds nothing, and told to skip issues Codex or Copilot already raised. Use when the user runs /request-reviews [pr], asks to get reviews on a PR, or wants the AI reviewers re-run after pushing fixes. Also called by delegate-task.
 allowed-tools: AskUserQuestion, Skill, Bash, Agent
 ---
 
@@ -88,8 +88,11 @@ code review not enabled for the repo), don't retry: say so in one line and move 
 Run Claude's own review so its findings sit alongside Codex's and Copilot's, without repeating them.
 
 The comments are posted with the user's own GitHub login, so they show up under the user's name.
-To make it obvious they came from Claude, every comment this review posts must start with
-`🤖 Claude: ` (emoji, the word Claude, a colon, a space).
+To make it obvious they came from Claude, and which model reviewed, every comment this review
+posts must start with the **prefix** `🤖 Claude (<model>): ` — emoji, the word Claude, the model
+in brackets, a colon, a space. `<model>` is the name and version of the model you're running as (e.g.
+`Opus 5.5`, `Sonnet 5.5`, `Fable 5.1`), e.g. `🤖 Claude (Opus 5.5): `. The review agent in 3c inherits your model,
+so fill the prefix in yourself before handing it over.
 
 ### 3a — Wait for Codex and Copilot
 
@@ -106,7 +109,8 @@ codex_done() {
   [ "$(gh api "repos/<owner>/<repo>/pulls/<number>/reviews" --paginate \
         --jq "[.[] | select(.user.login == \"chatgpt-codex-connector[bot]\" and .submitted_at >= \"$since\")] | length")" != 0 ] ||
   [ "$(gh api "repos/<owner>/<repo>/issues/<number>/comments" --paginate \
-        --jq "[.[] | select(.user.login == \"chatgpt-codex-connector[bot]\" and .created_at >= \"$since\")] | length")" != 0 ]
+        --jq "[.[] | select(.user.login == \"chatgpt-codex-connector[bot]\" and .created_at >= \"$since\"
+                    and (.body | contains(\"codex-pull-request-review-summary\") | not))] | length")" != 0 ]
 }
 copilot_done() {
   [ "$(gh api "repos/<owner>/<repo>/pulls/<number>/reviews" --paginate \
@@ -118,7 +122,10 @@ copilot_done && echo "copilot: done" || echo "copilot: timed out"
 ```
 
 Codex counts as done once it posts a review *or* a top-level comment, since it reports "no major
-issues" and errors as comments rather than reviews. The 15-minute cap means a reviewer that never
+issues" and errors as comments rather than reviews. Its "Codex Review Summary" status card doesn't
+count: Codex posts that the moment the review starts, while it still says "Running".
+Run the loop with `bash` (e.g. inside `bash <<'EOF' ... EOF`), not the user's shell: zsh handles
+word splitting differently, and an API error makes a check pass. The 15-minute cap means a reviewer that never
 shows up (app not installed, review failed silently) only delays Claude, never blocks it.
 
 Don't wait in the foreground — go on to Step 4 and report, then continue with 3b when the
@@ -148,7 +155,9 @@ listing is empty, run 3c without the dedupe instruction.
 
 ### 3c — Run the review
 
-1. Record the time just before launching, for step 3: `date -u +%Y-%m-%dT%H:%M:%SZ`.
+1. Record the time just before launching, for step 3: `date -u +%Y-%m-%dT%H:%M:%SZ`. Also
+   record the commit being reviewed, for the "no issues" comment in step 3:
+   `gh pr view <url> --json headRefOid -q .headRefOid`.
 2. Launch the review through the **Agent tool** (`subagent_type: "general-purpose"`, description
    e.g. `Claude review of PR <number>`), not by invoking `code-review` directly. `code-review`
    runs as a forked agent that doesn't see anything you write before invoking it, and its args
@@ -161,8 +170,7 @@ listing is empty, run 3c without the dedupe instruction.
    args: "high --comment <url>". Always pass the level "high" explicitly.
 
    Rules for the review, which take precedence over the skill's own defaults:
-   - Start every comment you post on the PR with "🤖 Claude: " (emoji, the word Claude, a
-     colon, a space).
+   - Start every comment you post on the PR with "<prefix>" (e.g. "🤖 Claude (Opus 5.5): ").
    - The PR's code is checked out at <review dir>. Read it from there, not from your current
      working directory: open files by their absolute paths under it, run git and other
      commands with `cd <review dir> &&` or `git -C <review dir>`, and pass the full PR URL to
@@ -197,19 +205,32 @@ listing is empty, run 3c without the dedupe instruction.
      --jq ".[] | select(.user.login == \"$ME\" and .created_at >= \"<since>\") | {id, body}"
    ```
 
-   For each one whose body doesn't already start with `🤖 Claude:`, prepend `🤖 Claude: ` and save
-   it back — `PATCH repos/<owner>/<repo>/pulls/comments/<id>` for inline comments,
+   For each one whose body doesn't already start with the prefix, prepend it and save it back — `PATCH repos/<owner>/<repo>/pulls/comments/<id>` for inline comments,
    `PUT repos/<owner>/<repo>/pulls/<number>/reviews/<id>` for review bodies,
    `PATCH repos/<owner>/<repo>/issues/comments/<id>` for top-level comments, each with
    `-f body=<new body>`. Leave any `@codex review` trigger comment alone — editing it can stop
    Codex picking it up. Then tell the user in one line how many findings Claude posted and that
    they're prefixed.
+
+   If the review completed but posted **no findings**, say so on the PR the way Codex does, with a
+   top-level comment (`gh pr comment <url> --body-file -`), using the commit recorded in step 1
+   (first 10 characters):
+
+   ```markdown
+   🤖 Claude (<model>) Review: Didn't find any major issues.
+
+   **Reviewed commit:** `<short sha>`
+   ```
+
+   If it skipped findings as already raised, write "Didn't find any major issues beyond those
+   already raised." instead. Only post this when the review actually finished — not when it
+   failed.
 4. If Step 0b created a temporary worktree, remove it now:
    `git worktree remove --force "$REVIEW_DIR"`. Never remove the user's checkout or a worktree
    that already existed.
 
-If the review fails or posts nothing, say so in one line, remove the temporary worktree if there
-is one, and move on — don't retry.
+If the review fails, say so in one line (and don't post the "no issues" comment), remove the
+temporary worktree if there is one, and move on — don't retry.
 
 ## Step 4 — Report
 
@@ -219,7 +240,7 @@ they've posted (up to 15 minutes) — or what failed for each. Say which checkou
 read (current checkout, existing worktree, or a temporary one at the PR head).
 
 When Claude's review finishes, add one line saying how many findings it posted and how many it
-skipped as already raised, if it says.
+skipped as already raised, if it says — or that it found none and posted the "no issues" comment.
 
 When called from another skill, keep it to those lines so the caller can fold them into its own
 report.

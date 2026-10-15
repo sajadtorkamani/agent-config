@@ -23,6 +23,6 @@ git clone git@github.com:sajadtorkamani/claude-config.git ~/code/claude-config
 - `delegate-task`: does a task end to end in a throwaway worktree, then opens a draft PR into the branch you pick — assigned to you, labelled `claude`, with the description already written, and AI reviews requested via `request-reviews`.
 - `explain-review-comment`: takes a pasted PR review comment (usually a screenshot), checks it against the code, says whether it's a real issue in plain terms, and offers a fix.
 - `pr-summary`: asks for the base branch and any related PRs, then summarises the branch's commits as markdown for the GitHub PR description.
-- `request-reviews`: gets AI reviews on a PR: comments `@codex review`, requests Copilot, and runs Claude's `/code-review` with comments prefixed `🤖 Claude:`. Re-run it after pushing fixes.
+- `request-reviews`: gets AI reviews on a PR: comments `@codex review`, requests Copilot, and runs Claude's `/code-review` with comments prefixed `🤖 Claude (<model>):` (or a "no major issues" comment when it finds nothing). Re-run it after pushing fixes.
 - `review-handoff`: asks for the base branch, then writes a review prompt for another agentic CLI (Codex, Gemini CLI, a fresh Claude Code session) to run in the same checkout, and triages the findings you paste back.
 - `summarise-changes`: recaps the uncommitted work and unpushed commits in the current repo, for when you've lost track of what you were doing.

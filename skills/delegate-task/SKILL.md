@@ -215,7 +215,7 @@ Keep it short. The PR description carries the detail.
 - Don't merge, don't request review from any human but the user, and don't add any labels
   unless asked. The AI reviews from `request-reviews` (Codex, Copilot,
   Claude) are the exception — they go on every delegated PR.
-- No Claude attribution or co-author trailers in commits or the PR body. The `🤖 Claude: ` prefix
+- No Claude attribution or co-author trailers in commits or the PR body. The `🤖 Claude (<model>): ` prefix
   on review comments is deliberate and is the only attribution.
 - If the work fails partway, still report where things stand and leave the worktree in place —
   half-finished work the user can inspect beats a silent rollback.
