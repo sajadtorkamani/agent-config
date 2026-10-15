@@ -1,1 +1,1 @@
-@~/code/claude-config/AGENTS.md
+@~/code/agent-config/AGENTS.md
