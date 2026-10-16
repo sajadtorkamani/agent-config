@@ -8,6 +8,7 @@ Personal instructions that apply to every project on this machine.
 ## React
 - Always write in TypeScript instead of plain JavaScript where possible and ensure it aligns with the project's tsconfig.json.
 - Avoid React.useEffect if possible as it easily introduces bugs and makes the code harder to reason about. See https://react.dev/learn/you-might-not-need-an-effect.
+- When a component shows exactly one of several states (e.g. error, empty or content), render each state with an early return instead of sibling `{condition && ...}` blocks, so it's clear only one can render. Check the states in order: error, then empty, then content. If the states sit inside a larger component, extract them into a sub-component rather than an inline `renderX()` function. Keep `{condition && <Component />}` for optional pieces that can appear alongside other content.
 
 ## TypeScript
 - Avoid any return types.
