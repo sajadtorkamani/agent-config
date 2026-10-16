@@ -19,6 +19,7 @@ Personal instructions that apply to every project on this machine.
   - Prefer Doctrine collections (`$entity->getItems()->filter(...)->map(...)->getValues()`, or `new ArrayCollection($array)` for a plain array).
   - Fall back to Illuminate's `collect()` only when the project has `illuminate/collections` and Doctrine can't do it (e.g. sorting with `sortBy()`).
   - A single array function on its own (e.g. one `array_map`) is fine.
+- Don't escape single quotes inside single-quoted strings — use a double-quoted string instead, e.g. `"You don't have permission"`, not `'You don\'t have permission'`.
 
 ## Python
 - Always add type hints to functions and variables.
