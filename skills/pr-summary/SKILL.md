@@ -75,22 +75,45 @@ With the chosen base (call it `BASE`):
 Output the description inside a fenced ` ```markdown ` block so the user can copy it in one go.
 Put nothing else inside the fence — no preamble, no "here's your summary".
 
-Shape it roughly like this, dropping any section that would be empty:
+Write for non-technical readers first, with the technical detail tucked away. Shape it like
+this (keep the blank lines around `<summary>` and before `</details>`, or GitHub won't render the
+markdown inside):
 
 ```markdown
 ## Summary
 
-One or two sentences on what this PR does and why.
+A few plain-language lines on what the change lets people do and why, with the ticket link and
+any deploy order (e.g. "deploy the API PR first").
 
-## Changes
+<details open>
+<summary><strong>What's changing</strong></summary>
 
-- **Area / file group** — what changed and the reason.
-- **Another area** — …
+### What changes for <users / admins / ...>
 
-## Notes
+- **Behaviour change**: what someone using the app can now do or will now see.
+- **Another behaviour change**: ...
 
-Anything a reviewer needs: migrations, config or env changes, follow-up work, trade-offs,
-breaking changes.
+### What <users> see
+
+**State or message**: a one-line plain-language caption.
+
+<!-- screenshot: state or message -->
+
+</details>
+
+<details>
+<summary><strong>Implementation details</strong></summary>
+
+#### Area
+
+- How it works: key files, components, endpoints, fields, error codes.
+
+#### Decisions, migrations and tests
+
+- Decisions made, migrations (or "no migration needed"), tests added or changed, cleanup after
+  merging.
+
+</details>
 
 ## Related
 
@@ -100,17 +123,29 @@ breaking changes.
 
 Guidelines:
 
+- **"What's changing" is non-technical.** Describe behaviour from the user's point of view. No
+  class, component, endpoint or field names there; those go in "Implementation details".
+- **Screenshots**: this skill can't take them. When the change is visible in the UI, add a
+  caption and a `<!-- screenshot: ... -->` placeholder for each state or message a user can see,
+  and say in step 5 which screenshots are still needed. Never say how screenshots were produced
+  (e.g. a temporary Storybook story or sample data).
+- **No user-facing change** (e.g. a refactor or tooling): say so in one line under "What's
+  changing" and put the substance in "Implementation details".
+- **Linked PRs**: when this PR depends on another (e.g. a front-end PR on an API PR), use the
+  same "What's changing" content in both, and in the dependency's implementation details map each
+  screenshot to the fields or endpoints behind it.
+- Don't add a separate "Notes" section. Reviewer notes (migrations, config or env changes,
+  trade-offs, follow-ups, breaking changes) go in "Implementation details".
 - **Group by change, not by commit.** Several commits touching the same thing become one bullet;
   a single commit doing three unrelated things becomes three.
-- Write for a reviewer who hasn't seen the branch: what changed, why, and what to look at.
-- Skip noise — formatting-only commits, merge commits, "fix typo", WIP commits squashed into
+- Skip noise: formatting-only commits, merge commits, "fix typo", WIP commits squashed into
   later work. Mention them only if they're the substance of the PR.
-- Keep it proportionate: a three-commit branch gets a short summary and a few bullets, not a
-  templated wall of headings.
-- Don't claim the code was tested, reviewed, or deployed. Only mention tests if the branch
-  actually adds or changes them.
-- Use the repo's existing PR conventions if they're visible (`gh pr view` on a recent merged PR)
-  — ticket prefixes, checklists, a required template.
+- Keep it proportionate: a three-commit branch gets a short summary, a few bullets per toggle and
+  no subheadings, not a templated wall of headings.
+- Don't claim the code was tested, reviewed, or deployed. Only mention tests the branch adds or
+  changes, or that were run in this session.
+- Use the repo's existing PR conventions if they're visible (`gh pr view` on a recent merged PR):
+  ticket prefixes, checklists, a required template.
 - If the repo has a `.github/pull_request_template.md`, follow its structure instead of the one
   above, filling in each section from the commits.
 
@@ -134,7 +169,8 @@ ticket the text mentions must be a clickable link, never plain text:
 ## Step 5 — Report
 
 After the fenced block, add a short line outside it: the base branch, the number of commits
-summarised, and the "create PR" URL if you have one
+summarised, any screenshots still needed (from the placeholders), and the "create PR" URL if you
+have one
 (`gh repo view --json url -q .url` + `/compare/BASE...HEAD?expand=1`).
 
 ## Rules
