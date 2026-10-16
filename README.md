@@ -15,6 +15,14 @@ git clone git@github.com:sajadtorkamani/agent-config.git ~/code/agent-config
 
 `AGENTS.md` holds the global instructions for every project on this machine, in the [AGENTS.md](https://agents.md) format that most coding agents read. Codex reads it directly. Claude Code doesn't read `AGENTS.md` itself, so `CLAUDE.md` just imports it (`@~/code/agent-config/AGENTS.md`). Edit `AGENTS.md`, not `CLAUDE.md`.
 
+## Private instructions and skills
+
+Work-specific instructions and skills live in a separate private repo, `agent-config-private`, cloned next to this one at `~/code/agent-config-private`. It's optional: without it, everything here works the same.
+
+- `CLAUDE.md` also imports `~/code/agent-config-private/AGENTS.md`. Claude Code skips the import if the file isn't there.
+- `install.sh` symlinks the private repo's `skills/` into `~/.claude/skills/` too.
+- Codex doesn't support imports, so when the private repo is present, `install.sh` writes `~/.codex/AGENTS.md` as a merged copy of both `AGENTS.md` files instead of a symlink. Re-run `install.sh` after editing either one so Codex picks up the change.
+
 ## Skills
 
 The skills are written for Claude Code.
