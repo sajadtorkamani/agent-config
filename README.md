@@ -27,7 +27,6 @@ Work-specific instructions and skills live in a separate private repo, `agent-co
 
 The skills are written for Claude Code.
 
-- `add-rq-task`: adds a TODO item to the 'RQ tasks' Notion board with my standard task template.
 - `address-pr-comment`: takes a pasted PR review comment, checks whether it's worth fixing (asks first for edge cases), fixes it in a worktree on a `<branch>--patch-<slug>` branch, opens a draft PR into the original PR's branch, and replies on the comment with the patch link and again once it's merged.
 - `commit`: commits changes with a concise title (≤72 chars) and an optional description.
 - `commit-and-push`: runs `commit`, then pushes the branch to the remote.
