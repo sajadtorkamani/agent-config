@@ -5,6 +5,28 @@ Personal instructions that apply to every project on this machine.
 ## General coding style
 - Prefer longer descriptive names for variables, functions, etc over shorter, cryptic names. Avoid single-letter variable names.
 
+## Pull requests
+
+- Write PR descriptions for non-technical readers first, in this order:
+  1. `## Summary`: a few plain-language lines on what the change lets people do
+     and why, with the ticket link and any deploy order (e.g. "deploy the API PR
+     first").
+  2. A `<details open>` toggle titled "What's changing": the behaviour changes
+     from the user's point of view, and screenshots for each state or message a
+     user can see, each with a one-line plain-language caption. No class,
+     component, endpoint or field names here.
+  3. A `<details>` toggle (collapsed) titled "Implementation details": how it
+     works, key files and components, API fields, error codes, decisions made,
+     migrations, tests run, and cleanup after merging (e.g. a screenshots branch).
+  4. `## Related`: the ticket and any linked PRs.
+- Leave a blank line after each `<summary>` line and before `</details>` so the
+  markdown inside renders.
+- Don't say how screenshots were produced (e.g. a temporary Storybook story or
+  sample data). Just show them.
+- When a PR depends on another PR, use the same "What's changing" screenshots
+  in both, and in the dependency's implementation details, map each screenshot
+  to the fields or endpoints behind it.
+
 ## React
 - Always write in TypeScript instead of plain JavaScript where possible and ensure it aligns with the project's tsconfig.json.
 - Avoid React.useEffect if possible as it easily introduces bugs and makes the code harder to reason about. See https://react.dev/learn/you-might-not-need-an-effect.
