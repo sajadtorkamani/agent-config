@@ -1,6 +1,6 @@
 ---
 name: delegate-task
-description: Take a task end to end in an isolated git worktree and hand back a draft PR — does the work, commits, pushes, opens a draft PR into the branch you choose, assigns it to you, requests you as reviewer, gets AI reviews on it via `request-reviews` (Codex, Copilot, Claude), and writes the PR description. Use whenever the user runs /delegate-task, or asks you to do a piece of work "in a worktree" and open a PR for it, or says to go off and build something and come back with a PR to review.
+description: Take a task end to end in an isolated git worktree and hand back a draft PR — does the work, commits, pushes, opens a draft PR into the branch you choose, assigns it to you, requests you as reviewer, optionally gets AI reviews on it via `request-reviews` (Codex, Copilot, Claude) if you want them, and writes the PR description. Use whenever the user runs /delegate-task, or asks you to do a piece of work "in a worktree" and open a PR for it, or says to go off and build something and come back with a PR to review.
 allowed-tools: AskUserQuestion, Skill, EnterWorktree, ExitWorktree, TodoWrite, Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -11,8 +11,8 @@ the work in a throwaway worktree so their main checkout is never touched.
 
 The whole point is that the user hands off a task and gets back something reviewable. Two things
 follow from that: their working tree must come out exactly as it went in, and the PR must arrive
-fully dressed — draft, assigned, reviewer requested, described, AI reviewers on it —
-so there's nothing left for them to click.
+fully dressed — draft, assigned, reviewer requested, described, and AI reviewers on it if they
+asked for them — so there's nothing left for them to click.
 
 ## Step 0 — Know the task
 
@@ -24,7 +24,7 @@ If the task depends on uncommitted changes in the current checkout, stop and say
 starts from a clean remote branch, so that work would not come along. Suggest committing (or
 stashing and re-applying) first, and let the user decide.
 
-## Step 1 — Work out the base branch
+## Step 1 — Work out the base branch and whether to get AI reviews
 
 The base is **not** fixed — the user merges into `staging`, `pre-prod`, `main` and others depending
 on the work. Never assume one. It matters here more than in a normal PR skill, because the worktree
@@ -39,12 +39,22 @@ Otherwise gather candidates in parallel (read-only; ignore any that fail):
   `staging`, `pre-prod`, `develop`, release branches.
 - `gh repo view --json defaultBranchRef -q .defaultBranchRef.name` — fallback for the default.
 
-Ask with **one** `AskUserQuestion` call:
+Also find out whether the user wants AI code reviews on the PR (Step 6b). If the arguments already
+say (e.g. "no reviews", "skip code review", "with reviews"), use that. Otherwise ask — reviews cost
+time and tokens, and a small or throwaway change often doesn't need them.
 
-- Question: "Which branch should this PR merge into?"
-- Header: `Base branch`.
-- Options: the 2–4 most likely bases, best guess first with "(Recommended)". The branch the user is
-  currently on is usually a good guess for where similar work lands. Anything else via "Other".
+Ask whatever's still unknown in **one** `AskUserQuestion` call, so the user answers once up front
+and isn't interrupted later:
+
+- Base branch (if not given):
+  - Question: "Which branch should this PR merge into?"
+  - Header: `Base branch`.
+  - Options: the 2–4 most likely bases, best guess first with "(Recommended)". The branch the user
+    is currently on is usually a good guess for where similar work lands. Anything else via "Other".
+- AI reviews (if not given):
+  - Question: "Do you want AI code reviews (Codex, Copilot, Claude) on this PR?"
+  - Header: `AI reviews`.
+  - Options: "Yes (Recommended)" — run `request-reviews` once the PR is open; "No" — skip them.
 
 Ask this **before** creating the worktree. Everything downstream depends on the answer.
 
@@ -170,7 +180,9 @@ Then:
 Verify the end state with `gh pr view <url> --json isDraft,assignees,reviewRequests` so the
 report reflects what GitHub actually has, not what you asked for.
 
-## Step 6b — Request AI reviews
+## Step 6b — Request AI reviews (if wanted)
+
+Skip this step if the user said no to AI reviews in Step 1.
 
 Invoke the `request-reviews` skill (Skill tool, `skill: request-reviews`) with the PR URL as the
 argument. It asks Codex and Copilot to review and runs Claude's `/code-review` with prefixed
@@ -192,7 +204,8 @@ Then report, briefly:
 - The PR URL and title, and that it's a draft.
 - Base branch and commit count.
 - Which of assignee / reviewer actually stuck, and anything that didn't, plus the
-  one-line-per-reviewer status from `request-reviews`.
+  one-line-per-reviewer status from `request-reviews` — or that AI reviews were skipped at the
+  user's request.
 - What you verified (tests run, types checked) and what you couldn't.
 - Any assumptions or unfinished parts — repeat them here even though they're in the PR body; this is
   the bit the user reads first.
@@ -214,7 +227,7 @@ Keep it short. The PR description carries the detail.
   otherwise.
 - Don't merge, don't request review from any human but the user, and don't add any labels
   unless asked. The AI reviews from `request-reviews` (Codex, Copilot,
-  Claude) are the exception — they go on every delegated PR.
+  Claude) are the exception — they go on every delegated PR unless the user said no in Step 1.
 - No Claude attribution or co-author trailers in commits or the PR body. The `🤖 Claude (<model>): ` prefix
   on review comments is deliberate and is the only attribution.
 - If the work fails partway, still report where things stand and leave the worktree in place —
