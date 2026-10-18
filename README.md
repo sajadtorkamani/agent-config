@@ -35,4 +35,5 @@ The skills are written for Claude Code.
 - `pr-summary`: asks for the base branch and any related PRs, then summarises the branch's commits as markdown for the GitHub PR description.
 - `request-reviews`: gets AI reviews on a PR: comments `@codex review`, requests Copilot, and runs Claude's `/code-review` with comments prefixed `🤖 Claude (<model>):` (or a "no major issues" comment when it finds nothing). Re-run it after pushing fixes.
 - `review-handoff`: asks for the base branch, then writes a review prompt for another agentic CLI (Codex, Gemini CLI, a fresh Claude Code session) to run in the same checkout, and triages the findings you paste back.
+- `review-linear-issue`: reviews a Linear issue's requirements (with its sub-issues and comments) against the codebase before planning, asks about anything unclear, flags clashes with existing functionality, and offers to write the answers back to Linear. Only runs when invoked with `/review-linear-issue <issue>`.
 - `summarise-changes`: recaps the uncommitted work and unpushed commits in the current repo, for when you've lost track of what you were doing.
