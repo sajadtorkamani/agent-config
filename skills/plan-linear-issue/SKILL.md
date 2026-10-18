@@ -55,15 +55,20 @@ The only change to Linear is the plan comment, made once the user approves it (s
    section out if there are none.>
 
    ### SAJ-19: <sub-issue title>
+
+   **Implementation**
    <How it'll be built: what changes, in which files (`path/to/file.php`), and anything to
    watch out for. A few bullets, not code.>
+
+   **How to test:** <The automated test that will cover it (file and what it checks), or, if
+   one isn't practical, the manual steps to check it.>
 
    ### SAJ-20: <sub-issue title>
    ...
 
    ### Testing
-   <How the change will be checked: automated tests to add or run, and the manual checks
-   (browsers, devices, edge cases).>
+   <Checks that cover the whole change rather than one sub-issue: the test suite, build and
+   type checks, browsers and devices, and nearby features that could break.>
 
    ### Order of work
    <Only if the order matters, e.g. which sub-issues depend on the shared changes.>
@@ -72,6 +77,11 @@ The only change to Linear is the plan comment, made once the user approves it (s
    - Give every sub-issue its own section, in a sensible build order, headed by its ID and
      title. If one sub-issue falls out of another's work with nothing extra to build, still
      give it a section and say so in a line.
+   - Split every sub-issue section into **Implementation** and **How to test**. Prefer an
+     automated test where the project has a test setup; otherwise give manual steps concrete
+     enough to follow (where to go, what to press, what should happen). When a section is a
+     single line, put it on the label's line (`**Implementation:** ...`).
+   - Leave out `### Shared changes` and `### Order of work` when there's nothing for them.
    - Name real files, functions and existing helpers to reuse. Reference files by repo-relative
      path, not `file:line`, since line numbers drift.
    - Keep it at the level of a plan: what and where, not the code itself. A short snippet is
@@ -84,8 +94,8 @@ The only change to Linear is the plan comment, made once the user approves it (s
    - Post it with `save_comment` on the issue from step 1, never on its sub-issues or parent.
    - If the issue already has a plan comment (a comment starting with `## Implementation plan`
      that the user wrote, or that was posted on their behalf), edit that comment instead of
-     posting a new one (`save_comment` with its `id`), so the issue has one current plan. Say in the preview that you'll be
-     replacing it.
+     posting a new one (`save_comment` with its `id`), so the issue has one current plan. Say
+     in the preview that you'll be replacing it.
    - Reply with the comment's link.
 
 ## Rules
