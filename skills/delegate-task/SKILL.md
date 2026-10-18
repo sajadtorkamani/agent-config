@@ -1,6 +1,6 @@
 ---
 name: delegate-task
-description: Take a task end to end in an isolated git worktree and hand back a draft PR — does the work, commits, pushes, opens a draft PR into the branch you choose, assigns it to you, requests you as reviewer, optionally gets AI reviews on it via `request-reviews` (Codex, Copilot, Claude) if you want them, and writes the PR description. Use whenever the user runs /delegate-task, or asks you to do a piece of work "in a worktree" and open a PR for it, or says to go off and build something and come back with a PR to review.
+description: Take a task end to end in an isolated git worktree and hand back a draft PR — does the work, commits, pushes, opens a draft PR into the branch you choose, assigns it to you, requests you as reviewer, optionally gets AI reviews on it via `request-reviews` (Codex, Copilot, Claude) if you want them, writes the PR description, and offers to check out the PR branches (including related PRs in other repos) locally. Use whenever the user runs /delegate-task, or asks you to do a piece of work "in a worktree" and open a PR for it, or says to go off and build something and come back with a PR to review.
 allowed-tools: AskUserQuestion, Skill, EnterWorktree, ExitWorktree, TodoWrite, Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -199,6 +199,41 @@ with `keep` in Step 7 does.
 Leave the worktree with `ExitWorktree` (`action: "keep"`) so the branch and directory survive for
 follow-up work while the session returns to the main checkout.
 
+### Offer to check the branches out locally
+
+The user often wants to run or poke at the PR in their usual checkout rather than the worktree. Ask
+before the report, so the report can say what happened and still end with the PR URL.
+
+Work out which branches to offer:
+
+- This repo's PR branch, in the main checkout.
+- The branch of each related PR in **another** repo, e.g. the API PR a front-end PR depends on —
+  from the task, the PR's `## Related` section or the conversation. Get its branch with
+  `gh pr view <url> --json headRefName -q .headRefName`. Find the user's local clone by checking
+  sibling directories of this repo's root for a git repo whose `origin` remote is that `owner/repo`.
+  If there's no clone, leave it out and say so in the report.
+
+Ask with **one** `AskUserQuestion` call:
+
+- One branch: "Do you want to check out `<branch>` in `<repo path>`?" — header `Checkout`, options
+  "Yes" and "No".
+- Several: "Which branches do you want checked out locally?" — header `Checkout`,
+  `multiSelect: true`, one option per repo labelled `<repo>: <branch>` with the clone's path in the
+  description, plus "None".
+
+For each one picked:
+
+1. If that checkout has uncommitted changes (`git -C <path> status --porcelain`), don't switch it
+   and don't stash. Skip it and say why in the report — switching would carry their changes onto
+   the PR branch or fail halfway.
+2. Git won't check out a branch that a worktree already has checked out. If one does (this
+   delegation's worktree, or another listed by `git -C <path> worktree list`), detach it first with
+   `git -C <worktree> switch --detach`. The worktree keeps the same commit, so a Claude review still
+   running from it isn't affected.
+3. `git -C <path> fetch origin <branch>`, then `git -C <path> switch <branch>`. This creates a
+   local branch tracking `origin/<branch>` if there isn't one. If a local branch with that name
+   already exists and has diverged from the remote, don't reset it. Skip it and say so.
+
 Then report, briefly:
 
 - The PR URL and title, and that it's a draft.
@@ -210,19 +245,23 @@ Then report, briefly:
 - Any assumptions or unfinished parts — repeat them here even though they're in the PR body; this is
   the bit the user reads first.
 - The worktree path and branch name, so they can jump back in.
+- Which branches were checked out locally and where, and any that were skipped and why. Leave
+  this out if the user said no.
 
 End the report with the PR URL on its own line, as the very last thing printed — the full
 `https://github.com/...` URL as plain text (not wrapped in backticks, a code block or markdown link
 syntax), so the terminal renders it as a clickable link the user can open straight away. For
 example, a final line of `PR: https://github.com/<owner>/<repo>/pull/<number>`, written without the
-backticks. Print it even if later steps failed, as long as the PR was created.
+backticks. Print it even if later steps failed, as long as the PR was created. If related PRs
+in other repos were involved, list each on its own line just above it, the same way.
 
 Keep it short. The PR description carries the detail.
 
 ## Rules
 
 - Never touch the user's original checkout — no commits, no branch switches, no stashing there. The
-  only reason to read from it is copying gitignored config into the worktree.
+  only reasons to touch it are copying gitignored config into the worktree, and switching it to a
+  PR branch at the end when the user picks it in Step 7.
 - Never force-push, and never mark the PR ready for review — it stays a draft until the user says
   otherwise.
 - Don't merge, don't request review from any human but the user, and don't add any labels
