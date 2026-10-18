@@ -1,6 +1,6 @@
 ---
 name: implement-linear-issue
-description: Implement a Linear issue and each of its sub-issues — clarifies anything ambiguous first (and offers to write the answers back to Linear), builds it either in the background in a worktree via `delegate-task` (ending in a draft PR) or on the current or a new branch, then posts a comment on each sub-issue saying how it was implemented, its automated tests, how to check it manually and any caveats. Use when the user runs /implement-linear-issue <issue ID or URL>.
+description: Implement a Linear issue and each of its sub-issues — clarifies anything ambiguous first (and offers to write the answers back to Linear), builds it either in the background in a worktree via `delegate-task` (ending in a draft PR) or on the current or a new branch, then posts a comment on each sub-issue saying how it was implemented, its automated tests, how to check it manually and any caveats. Once a PR with the change is open, moves each issue it covers to In Code Review. Use when the user runs /implement-linear-issue <issue ID or URL>.
 argument-hint: <issue ID or URL, e.g. SAJ-18>
 disable-model-invocation: true
 ---
@@ -71,8 +71,8 @@ each one was done and check it for themselves.
      step 3. Name the task after the issue (e.g. `SAJ-18 photo keyboard navigation`) so its
      branch becomes `feature/SAJ-18-<slug>`, and tell it to follow steps 7 and 8 of this skill
      for the build and the Linear comments, posting the comments after the PR is open and
-     linking the PR in each. Tell the user it's running and stop. Report back when the agent's
-     notification arrives (step 9).
+     linking the PR in each, then step 9 for the statuses. Tell the user it's running and
+     stop. Report back when the agent's notification arrives (step 10).
    - **This checkout:** the current branch matches if its name contains the issue's ID or, for
      a sub-issue, its parent's ID (case-insensitive). Otherwise check the working tree is clean
      (stop and ask if it isn't), then fetch and branch from the remote's default branch
@@ -123,13 +123,26 @@ each one was done and check it for themselves.
    - If an issue already has an `## Implementation notes` comment from an earlier run, edit it
      (`save_comment` with its `id`) instead of posting another.
 
-9. **Report.** Briefly: what was built, the branch and commits (or the PR link in worktree
-   mode), what was verified and what couldn't be, any caveats, and links to the comments posted.
+9. **Move the issues to In Code Review once there's a PR.** As soon as a PR containing the
+   change is open, set the status of every issue it covers to `In Code Review` (`save_issue`
+   with `state`): the given issue and each sub-issue built, including ones that fell out of
+   another's work. This applies whenever a PR gets opened in the session: by `delegate-task` in
+   worktree mode, or later in this checkout when the user asks for one.
+   - Look the status up first (`list_issue_statuses` for the issue's team). If the team has
+     no `In Code Review` status, don't create one or pick a different status. Tell the user
+     and leave the statuses as they are.
+   - Leave any issue that's already Done or Canceled alone.
+   - Don't change statuses before there's a PR, e.g. after committing in this checkout.
+
+10. **Report.** Briefly: what was built, the branch and commits (or the PR link in worktree
+    mode), what was verified and what couldn't be, any caveats, links to the comments
+    posted, and which issues moved to In Code Review.
 
 ## Rules
 
-- Nothing changes in Linear except the agreed updates in step 5 and the comments in step 8.
-  Never change status, assignee, priority or labels.
+- Nothing changes in Linear except the agreed updates in step 5, the comments in step 8 and
+  the In Code Review status in step 9. Never change assignee, priority or labels, or any
+  other status.
 - In this checkout: no push and no PR unless the user asks.
 - Ask about ambiguity before building, never after. A background build can't ask, so settle
   everything in step 4 before launching it.
