@@ -27,6 +27,12 @@ Personal instructions that apply to every project on this machine.
   in both, and in the dependency's implementation details, map each screenshot
   to the fields or endpoints behind it.
 
+## GitHub comments
+
+- Prefix every comment I post on GitHub (PR comments, review replies, issue
+  comments) with `🤖 Claude (<model>): `, e.g. `🤖 Claude (Opus 5.5): Fixed in abc123.`,
+  so it's clear Claude wrote it even though it posts under my account.
+
 ## React
 - Always write in TypeScript instead of plain JavaScript where possible and ensure it aligns with the project's tsconfig.json.
 - Avoid React.useEffect if possible as it easily introduces bugs and makes the code harder to reason about. See https://react.dev/learn/you-might-not-need-an-effect.
