@@ -53,6 +53,7 @@ Personal instructions that apply to every project on this machine.
   - Fall back to Illuminate's `collect()` only when the project has `illuminate/collections` and Doctrine can't do it (e.g. sorting with `sortBy()`).
   - A single array function on its own (e.g. one `array_map`) is fine.
 - Don't escape single quotes inside single-quoted strings — use a double-quoted string instead, e.g. `"You don't have permission"`, not `'You don\'t have permission'`.
+- In `#[Groups([...])]` attributes, put each group on the line directly after the previous one, with no blank lines between them. When adding a group to an existing list, don't add blank lines around it, and remove any blank line between the groups either side of it.
 
 ## Python
 - Always add type hints to functions and variables.
