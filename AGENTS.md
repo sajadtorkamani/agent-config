@@ -57,3 +57,6 @@ Personal instructions that apply to every project on this machine.
 
 ## Python
 - Always add type hints to functions and variables.
+
+## Roam Research
+- When reading or editing my Roam Research graph, follow the workflow notes in `~/code/agent-config/roam-research-workflow.md`.
