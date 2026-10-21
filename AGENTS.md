@@ -43,6 +43,7 @@ Personal instructions that apply to every project on this machine.
 ## TypeScript
 - Avoid any return types.
 - Don't add `void` return types for functions that don't return anything.
+- Prefer a truthy check over `!== null` / `!== undefined` when the value can't be falsy in any other way, e.g. `if (summary)` for an object. Keep the strict comparison for strings, numbers and booleans, where `''`, `0` or `false` would be skipped by mistake.
 - When code passes or compares a value of a string union type defined in the project, reference a `Record<Type, Type>` constant instead of a string literal, adding one if it doesn't exist (e.g. `useIsBreakpoint(BREAKPOINTS.md)`, not `useIsBreakpoint('md')`).
 
 ## PHP / Symfony
@@ -54,6 +55,7 @@ Personal instructions that apply to every project on this machine.
   - A single array function on its own (e.g. one `array_map`) is fine.
 - Don't escape single quotes inside single-quoted strings — use a double-quoted string instead, e.g. `"You don't have permission"`, not `'You don\'t have permission'`.
 - In `#[Groups([...])]` attributes, put each group on the line directly after the previous one, with no blank lines between them. When adding a group to an existing list, don't add blank lines around it, and remove any blank line between the groups either side of it.
+- Prefer a truthy check over comparing with `null` when the value can't be falsy in any other way, e.g. `if ($invitedFrom)` for a `?\DateTimeImmutable`, not `if ($invitedFrom !== null)`. It's quicker to read. This is safe for nullable objects and arrays of objects. Keep the strict comparison when a falsy value is a real value that would be skipped by mistake: strings (`'0'` and `''`), integers and floats (`0`), booleans and arrays (`[]`), e.g. `if ($search !== '')`, `if ($count !== null)`.
 
 ## Python
 - Always add type hints to functions and variables.
