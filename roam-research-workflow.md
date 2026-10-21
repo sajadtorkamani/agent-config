@@ -10,7 +10,7 @@ Notes on how I use Roam Research while writing code and working on features.
 
 ## Task pages
 
-- I manage tasks with the `RQ task` template on the `Templates` page. Each task page has `Notes`, `Links` and `Subtasks` blocks, and `Subtasks` has one child block per status: `DONE`, `QA`, `IN PROGRESS` and `TODO`.
+- I manage tasks with the `Task` template on the `Templates` page. Each task page has `Notes`, `Links` and `Subtasks` blocks, and `Subtasks` has one child block per status: `DONE`, `QA`, `IN PROGRESS` and `TODO`.
 - I break a task down into small subtasks, each a block under one of those status blocks. A subtask's child blocks (sub-steps, screenshots, notes) belong to it and move with it.
 - The `TODO` block ends with a `---` divider followed by my standard wrap-up steps (tests, QA, tidying the diff, summary). Feature subtasks go above the divider.
 
