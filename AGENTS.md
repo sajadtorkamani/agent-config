@@ -40,6 +40,11 @@ Personal instructions that apply to every project on this machine.
 - Prefer `{condition && <Component />}` over ternaries where the false branch would be `null`.
 - When a component shows exactly one of several states (e.g. error, empty or content), render each state with an early return instead of sibling `{condition && ...}` blocks, so it's clear only one can render. Check the states in order: error, then empty, then content. If the states sit inside a larger component, extract them into a sub-component rather than an inline `renderX()` function. Keep `{condition && <Component />}` for optional pieces that can appear alongside other content.
 
+## Next.js
+- Put each server action in its own file in an `actions` folder next to the route that uses it, named after the action in kebab case, e.g. `app/shopping-list/actions/add-shopping-list-item.ts` for `addShoppingListItem`. Don't group several actions in one `actions.ts`.
+- Keep only server actions in the `actions` folder. Put helpers and types the actions share (e.g. input parsing, form state types) in a `helpers.ts` next to the folder, e.g. `app/shopping-list/helpers.ts`. A `'use server'` file can only export async functions anyway.
+- Import each action from its own file rather than through an `index.ts` that re-exports them.
+
 ## TypeScript
 - Avoid any return types.
 - Don't add `void` return types for functions that don't return anything.
