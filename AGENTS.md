@@ -37,6 +37,7 @@ Personal instructions that apply to every project on this machine.
 - Avoid React.useEffect if possible as it easily introduces bugs and makes the code harder to reason about. See https://react.dev/learn/you-might-not-need-an-effect.
 - Prefer the `function foo()` syntax over `const foo = () => {}` for regular functions and hooks. React components are the exception: declare them as `const Foo: React.FC<Props> = (...) => ...` so they can use the `React.FC` type.
 - Prefer `{condition && <Component />}` over ternaries where the false branch would be `null`.
+- When JSX shows one of two pieces of UI depending on a condition, use a ternary (`{isEditing ? <EditForm /> : <Details />}`) rather than a `{condition && ...}` block followed by a `{!condition && ...}` block, so it's clear exactly one of them renders. If either branch is more than a few lines, extract it into a sub-component so the ternary stays easy to read. For a component whose whole output is one of several states, use early returns instead (see below).
 - When a component shows exactly one of several states (e.g. error, empty or content), render each state with an early return instead of sibling `{condition && ...}` blocks, so it's clear only one can render. Check the states in order: error, then empty, then content. If the states sit inside a larger component, extract them into a sub-component rather than an inline `renderX()` function. Keep `{condition && <Component />}` for optional pieces that can appear alongside other content.
 
 ## Next.js
