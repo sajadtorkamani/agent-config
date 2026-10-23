@@ -12,20 +12,19 @@ Personal instructions that apply to every project on this machine.
      and why, with the ticket link and any deploy order (e.g. "deploy the API PR
      first").
   2. A `<details open>` toggle titled "What's changing": the behaviour changes
-     from the user's point of view, and screenshots for each state or message a
-     user can see, each with a one-line plain-language caption. No class,
-     component, endpoint or field names here.
+     from the user's point of view. No class, component, endpoint or field
+     names here.
   3. A `<details>` toggle (collapsed) titled "Implementation details": how it
      works, key files and components, API fields, error codes, decisions made,
      migrations, tests run, and cleanup after merging (e.g. a screenshots branch).
   4. `## Related`: the ticket and any linked PRs.
 - Leave a blank line after each `<summary>` line and before `</details>` so the
   markdown inside renders.
-- Don't say how screenshots were produced (e.g. a temporary Storybook story or
-  sample data). Just show them.
-- When a PR depends on another PR, use the same "What's changing" screenshots
-  in both, and in the dependency's implementation details, map each screenshot
-  to the fields or endpoints behind it.
+- Screenshots are optional. Only add them when I ask or provide them, each with
+  a one-line plain-language caption, and don't say how they were produced (e.g.
+  a temporary Storybook story or sample data).
+- When a PR depends on another PR, use the same "What's changing" content in
+  both.
 
 ## GitHub comments
 

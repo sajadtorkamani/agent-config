@@ -93,12 +93,6 @@ any deploy order (e.g. "deploy the API PR first").
 - **Behaviour change**: what someone using the app can now do or will now see.
 - **Another behaviour change**: ...
 
-### What <users> see
-
-**State or message**: a one-line plain-language caption.
-
-<!-- screenshot: state or message -->
-
 </details>
 
 <details>
@@ -125,15 +119,13 @@ Guidelines:
 
 - **"What's changing" is non-technical.** Describe behaviour from the user's point of view. No
   class, component, endpoint or field names there; those go in "Implementation details".
-- **Screenshots**: this skill can't take them. When the change is visible in the UI, add a
-  caption and a `<!-- screenshot: ... -->` placeholder for each state or message a user can see,
-  and say in step 5 which screenshots are still needed. Never say how screenshots were produced
-  (e.g. a temporary Storybook story or sample data).
+- **Screenshots are optional.** Don't add screenshot placeholders. Only include screenshots the
+  user provides, each with a one-line plain-language caption, and never say how they were
+  produced (e.g. a temporary Storybook story or sample data).
 - **No user-facing change** (e.g. a refactor or tooling): say so in one line under "What's
   changing" and put the substance in "Implementation details".
 - **Linked PRs**: when this PR depends on another (e.g. a front-end PR on an API PR), use the
-  same "What's changing" content in both, and in the dependency's implementation details map each
-  screenshot to the fields or endpoints behind it.
+  same "What's changing" content in both.
 - Don't add a separate "Notes" section. Reviewer notes (migrations, config or env changes,
   trade-offs, follow-ups, breaking changes) go in "Implementation details".
 - **Group by change, not by commit.** Several commits touching the same thing become one bullet;
@@ -169,7 +161,7 @@ ticket the text mentions must be a clickable link, never plain text:
 ## Step 5 — Report
 
 After the fenced block, add a short line outside it: the base branch, the number of commits
-summarised, any screenshots still needed (from the placeholders), and the "create PR" URL if you
+summarised, and the "create PR" URL if you
 have one
 (`gh repo view --json url -q .url` + `/compare/BASE...HEAD?expand=1`).
 
