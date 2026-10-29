@@ -120,11 +120,14 @@ Post a threaded reply on the original comment:
 
 ```bash
 gh api repos/<owner>/<repo>/pulls/<n>/comments/<comment-id>/replies \
-  -f body="🤖 Claude (<model>): A patch for this has been created in <patch-pr-url>."
+  -f body="A patch for this has been created in <patch-pr-url>.
+
+_Claude Code on behalf of Sajad_"
 ```
 
-Use the `🤖 Claude (<model>): ` prefix, since the reply posts under the user's name. Don't resolve
-the conversation; the user does that.
+The reply posts under the user's name, so end it with a blank line and then the italic
+`_Claude Code on behalf of Sajad_` sign-off. Don't add a `🤖 Claude (<model>): ` prefix. Don't
+resolve the conversation; the user does that.
 
 ## Step 7 — Watch for the merge
 
@@ -141,7 +144,7 @@ echo "$state"
 When it finishes:
 
 - **MERGED** — reply on the same review comment thread:
-  `🤖 Claude (<model>): The patch in <patch-pr-url> has been merged.` Then remove the worktree
+  `The patch in <patch-pr-url> has been merged.`, ending with the same sign-off. Then remove the worktree
   (`git worktree remove <path>`) if it has no uncommitted changes, and tell the user in one line.
 - **CLOSED** without merging — don't comment. Tell the user and ask whether to reply on the thread.
 
@@ -169,5 +172,5 @@ End with the patch PR URL on its own line as plain text (no backticks or markdow
 - Never touch the user's checkout: no commits, branch switches or stashes there.
 - Never force-push, merge a PR, mark a patch PR ready for review, or resolve a review thread.
 - One comment, one patch branch, one PR.
-- No Claude attribution or co-author trailers in commits or PR bodies. The `🤖 Claude (<model>): `
-  prefix on comment replies is the only attribution.
+- No Claude attribution or co-author trailers in commits or PR bodies. The
+  `_Claude Code on behalf of Sajad_` sign-off on comment replies is the only attribution.

@@ -28,9 +28,12 @@ Personal instructions that apply to every project on this machine.
 
 ## GitHub comments
 
-- Prefix every comment I post on GitHub (PR comments, review replies, issue
-  comments) with `🤖 Claude (<model>): `, e.g. `🤖 Claude (Opus 5.5): Fixed in abc123.`,
-  so it's clear Claude wrote it even though it posts under my account.
+- Mark every comment you post on GitHub under my account as Claude's, so it's
+  clear Claude wrote it:
+  - Replies to PR review comments: no prefix. End the reply with a blank line
+    and then `_Claude Code on behalf of Sajad_` (italic).
+  - Every other comment (PR comments, review comments, issue comments): prefix
+    it with `🤖 Claude (<model>): `, e.g. `🤖 Claude (Opus 5.5): Looks good.`.
 
 ## React
 - Always write in TypeScript instead of plain JavaScript where possible and ensure it aligns with the project's tsconfig.json.

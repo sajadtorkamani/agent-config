@@ -46,8 +46,9 @@ offer a fix. This is advice: don't change code, commit, or reply on the PR until
 
 6. **End with an offer** in one line: implement the fix and add a test, and/or reply on the
    comment. When the user later asks you to reply, post it as a threaded reply to that comment
-   (`gh api repos/<owner>/<repo>/pulls/<n>/comments/<id>/replies`). Match any prefix the
-   original comment used (e.g. `🤖 Claude (Opus 5.5):`), and say whether the fix is pushed yet.
+   (`gh api repos/<owner>/<repo>/pulls/<n>/comments/<id>/replies`). Don't start it with a
+   `🤖 Claude (<model>):` prefix, even if the original comment has one. Instead end it with a
+   blank line and then `_Claude Code on behalf of Sajad_`. Say whether the fix is pushed yet.
 
 ## Rules
 
