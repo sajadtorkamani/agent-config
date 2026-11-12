@@ -167,7 +167,8 @@ listing is empty, run 3c without the dedupe instruction.
 
    ```text
    Run the `code-review` skill (Skill tool, skill: code-review) with
-   args: "high --comment <url>". Always pass the level "high" explicitly.
+   args: "high --max-findings all --comment <url>". Always pass the level "high" and
+   "--max-findings all" explicitly.
 
    Rules for the review, which take precedence over the skill's own defaults:
    - Start every comment you post on the PR with "<prefix>" (e.g. "🤖 Claude (Opus 5.5): ").
@@ -190,7 +191,9 @@ listing is empty, run 3c without the dedupe instruction.
 
    Leave out the "already on the PR" rule when the 3b listing is empty. Always pass the level
    explicitly, as above — without one, the review reuses whatever level the user last typed, so
-   reviews would get inconsistent depth.
+   reviews would get inconsistent depth. Always pass `--max-findings all` too — without it the
+   review caps how many findings it reports, and a real bug can be dropped behind lower-value
+   ones.
 3. The agent runs in the background and its result arrives later as a task notification. Don't
    wait for it. When the notification arrives, **fix the prefix before anything else**, before
    you report or discuss any findings, and before you go back to whatever else you were doing
