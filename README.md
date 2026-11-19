@@ -28,6 +28,7 @@ Work-specific instructions and skills live in a separate private repo, `agent-co
 The skills are written for Claude Code.
 
 - `address-pr-comment`: takes a pasted PR review comment, checks whether it's worth fixing (asks first for edge cases), fixes it in a worktree on a `<branch>--patch-<slug>` branch, opens a draft PR into the original PR's branch, and replies on the comment with the patch link and again once it's merged.
+- `build-in-slices`: splits a large change into small numbered slices and shows the list first, then builds one slice at a time, keeping the tests passing and stopping to report after each. Only runs when invoked with `/build-in-slices [task]`.
 - `commit`: commits changes with a concise title (≤72 chars) and an optional description.
 - `commit-and-push`: runs `commit`, then pushes the branch to the remote.
 - `delegate-task`: does a task end to end in a throwaway worktree, then opens a draft PR into the branch you pick — assigned to you, with the description already written, and AI reviews requested via `request-reviews`.
