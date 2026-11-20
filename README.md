@@ -31,6 +31,7 @@ The skills are written for Claude Code.
 - `build-in-slices`: splits a large change into small numbered slices and shows the list first, then builds one slice at a time, keeping the tests passing and stopping to report after each. Only runs when invoked with `/build-in-slices [task]`.
 - `commit`: commits changes with a concise title (≤72 chars) and an optional description.
 - `commit-and-push`: runs `commit`, then pushes the branch to the remote.
+- `deal-with-pr-comment`: takes a link to a PR review comment (or a screenshot of it) and checks whether it's valid and worth fixing. If it isn't, it stops and explains why. If it is, it fixes it on the PR's branch, commits, pushes, replies on the comment and resolves the thread.
 - `delegate-task`: does a task end to end in a throwaway worktree, then opens a draft PR into the branch you pick — assigned to you, with the description already written, and AI reviews requested via `request-reviews`.
 - `explain-review-comment`: takes a pasted PR review comment (usually a screenshot), checks it against the code, says whether it's a real issue in plain terms, and offers a fix.
 - `grill-me-before-starting-roam-task`: before starting the `IN PROGRESS` item on a Roam task page from this session, checks it against the code, says whether it makes sense, asks about anything ambiguous however small, then describes the plan with the assumptions behind it. Questions and a plan only: no code or Roam changes.
